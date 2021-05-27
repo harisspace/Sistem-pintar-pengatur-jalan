@@ -5,7 +5,19 @@
   "main": "server.ts",
   "author": "Haris Akbar",
   "license": "MIT",
+  "scripts": {
+    "dev": "nodemon --exec ts-node src/server.ts",
+    "test": "jest --coverage"
+  },
   "dependencies": {
+    "@types/jest": "^26.0.23",
+    "cors": "^2.8.5",
     "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.12",
+    "jest": "^27.0.1",
+    "prisma": "^2.23.0",
+    "ts-jest": "^27.0.1"
   }
 }
