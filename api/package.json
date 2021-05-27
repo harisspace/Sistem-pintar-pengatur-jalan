@@ -1,0 +1,11 @@
+{
+  "name": "sistem-pintar-pengatur-jalan",
+  "version": "1.0.0",
+  "description": "api for web sistem pintar peengatur jalan",
+  "main": "server.ts",
+  "author": "Haris Akbar",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
