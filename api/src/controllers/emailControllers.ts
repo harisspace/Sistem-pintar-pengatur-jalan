@@ -4,16 +4,23 @@ import { verifyToken } from "../utils/Auth/generateToken";
 import { Email } from "../utils/Auth/SendEmail";
 import { ForbiddenError } from "../utils/errorHandler/ForbiddenError";
 import { NotFoundError } from "../utils/errorHandler/NotFoundError";
-import { UnauthorizedError } from "../utils/errorHandler/UnauthorizedError";
+import { BadRequestError } from "../utils/errorHandler/BadRequestError";
 
 export default {
   // === GET ===
   resendEmail: async (req: Request, res: Response, next: NextFunction) => {
-    const { token } = req.query;
+    const token = req.query?.token;
+
+    console.log(token);
+    if (!token || token === undefined) {
+      console.log("masuk");
+      return next(new BadRequestError("Token must provided as query string"));
+    }
 
     const { username, email }: any = verifyToken(token as string, process.env.JWT_SECRET!);
+    console.log(username, email);
 
-    if (username & email) {
+    if (username && email) {
       try {
         const user = await prisma.users.findUnique({ where: { email } });
         if (user) {

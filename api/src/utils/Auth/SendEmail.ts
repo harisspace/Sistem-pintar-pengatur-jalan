@@ -35,7 +35,7 @@ export class Email {
       from: process.env.GMAIL_USER!,
       to: this.email,
       subject: "Verification signin",
-      html: `<b>please click this <a href="http://localhost:4000/api/v1/auth/confirmation/${this.token}">link</a> to activation account</b>`,
+      html: `<b>please click this <a href="${process.env.CLIENT_DOMAIN}/auth/confirmation/${this.token}">link</a> to activation account</b>`,
     });
   }
 }

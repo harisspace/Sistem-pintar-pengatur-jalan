@@ -1,4 +1,4 @@
-import { NextFunction, query, Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { prisma } from "../server";
 import { generateToken, verifyToken } from "../utils/Auth/generateToken";
@@ -12,6 +12,7 @@ import { UnauthorizedError } from "../utils/errorHandler/UnauthorizedError";
 import { NotFoundError } from "../utils/errorHandler/NotFoundError";
 import { serializeCookie } from "../utils/Auth/cookie";
 import queryString from "querystring";
+import axios from "axios";
 
 // controllers
 export default {
@@ -93,33 +94,18 @@ export default {
     }
 
     let user: Partial<User> | null;
+
     try {
-      user = await prisma.users.findUnique({ where: { email }, select: SelectUser });
+      user = await prisma.users.findUnique({ where: { email } });
       if (!user) {
         return next(new NotFoundError("User not found"));
       }
     } catch (err) {
       return next(new InternalError("Something went wrong"));
     }
-
-    // generate token
-    const token = generateToken({ username: user.username as string, email });
-
-    // handle if user not confirmed account (respon)
-    if (user && !user.confirmed) {
-      const setQueryString = queryString.stringify({ token });
-      return res.json({
-        message: "User need confirmation email",
-        options: {
-          email: {
-            message: "Not receive email?, pleases click this link to send back",
-            redirect: `/api/v1/auth/email?${setQueryString}`,
-          },
-        },
-      });
-    }
-
+    // match password
     const passwordMatch = await bcrypt.compare(password, user.password!);
+
     if (!passwordMatch) {
       return next(
         new BadRequestError("Incorrect password", {
@@ -128,24 +114,59 @@ export default {
       );
     }
 
+    // generate token
+    const token = generateToken({ username: user.username as string, email });
+
+    // handle if user not confirmed account (respon)
+    if (user && !user.confirmed) {
+      const setQueryString = queryString.stringify({ token });
+      return res.status(400).json({
+        message: "User need confirmation email",
+        errors: {
+          global: "User need confirmation email",
+          options: {
+            email: {
+              message: "Not receive email?, pleases click this link to send back",
+              redirect: `/auth/email?${setQueryString}`,
+            },
+          },
+        },
+      });
+    }
+
     // set to cookie
     serializeCookie("token", token);
 
-    return res.json({ user: { ...user }, redirect: "/" });
+    // remove password
+    const { password: passwordDB, ...userWithoutPass } = user;
+
+    return res.json({ user: { ...userWithoutPass }, redirect: "/" });
   },
 
   // ==== GET METHOD ====
-  confirmation: (req: Request, res: Response, next: NextFunction) => {
-    const token = req.params;
+  confirmation: async (req: Request, res: Response, next: NextFunction) => {
+    const token = req.params.token;
 
-    const { username, email }: any = verifyToken((<unknown>token) as string, process.env.JWT_SECRET!);
+    let username: any, email: any;
+    verifyToken((<unknown>token) as string, process.env.JWT_SECRET!, (err: any, decodedToken: any) => {
+      if (err) {
+        return next(new BadRequestError("Invalid token", err));
+      }
+      console.log(decodedToken);
+      username = decodedToken.username;
+      email = decodedToken.email;
+      const expiredTime = decodedToken.exp;
+      if (Date.now() >= expiredTime * 1000) {
+        return next(new BadRequestError("Token expired"));
+      }
+    });
 
     if (!username && !email) {
       return next(new UnauthorizedError("Invalid token"));
     }
 
     try {
-      const user = prisma.users.update({ where: { email, username }, data: { confirmed: true } });
+      const user = await prisma.users.update({ where: { email }, data: { confirmed: true } });
       if (!user) {
         return next(new NotFoundError("User not found"));
       }
@@ -160,5 +181,61 @@ export default {
     res.set("Set-Cookie", serializeCookie("token", newToken));
 
     return res.json({ success: true, redirect: "/" });
+  },
+
+  googleConfirmation: async (req: Request, res: Response, next: NextFunction) => {
+    const { code } = req.query;
+
+    if (!code) {
+      return next(new BadRequestError("Invalid query string"));
+    }
+
+    const {
+      data: { access_token },
+    } = await axios({
+      url: `https://oauth2.googleapis.com/token`,
+      method: "post",
+      data: {
+        client_id: process.env.CLIENT_ID,
+        client_secret: process.env.CLIENT_SECRET,
+        redirect_uri: process.env.OAUTH_REDIRECT,
+        grant_type: "authorization_code",
+        code,
+      },
+    });
+
+    if (!access_token) {
+      return next(new InternalError("Cannot get access token"));
+    }
+
+    const { data } = await axios({
+      url: "https://www.googleapis.com/oauth2/v2/userinfo",
+      method: "get",
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+    console.log(data); // { id, email, given_name, family_name }
+
+    if (!data) {
+      return next(new InternalError("Cannot get data from token"));
+    }
+
+    const { email, name, pictureUri } = data;
+
+    // // inser to db data users
+    // let user: any;
+    // try {
+    //   user = await prisma.users.create({
+    //     data: { email: email, user_role: "user", password: "google", username: name, confirmed: true },
+    //   });
+    //   if (!user) {
+    //     return next(new InternalError("Cannot create user"));
+    //   }
+    // } catch (err) {
+    //   return next(new InternalError("Cannot create user", err));
+    // }
+
+    return res.json({ success: true, user: { ...data } });
   },
 };
