@@ -28,7 +28,7 @@ export default function Home() {
           <div className="w-8/12 m-auto">
             <div className="flex flex-row justify-between mt-20">
               <div className="flex justify-center flex-col items-center">
-                <Image src="/images/kecepatan.png" width={150} height={100} className="block" />
+                <Image src="/images/kecepatan.png" width={130} height={100} className="block" />
                 <span className="text-primary">Speed Detection</span>
               </div>
 

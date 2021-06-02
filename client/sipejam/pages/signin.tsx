@@ -1,4 +1,6 @@
 import Head from "next/head";
+import Link from "next/link";
+import { useRouter } from "next/router";
 import { FormEvent, useState } from "react";
 import axios from "axios";
 import { Loader } from "../components/Loader";
@@ -9,6 +11,8 @@ export default function signin() {
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<any>({});
   const [loading, setLoading] = useState(false);
+
+  const router = useRouter();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -23,8 +27,12 @@ export default function signin() {
       });
       if (result) {
         setLoading(false);
+
+        if (result.data.user) {
+          router.push(result.data.redirect);
+        }
       }
-      console.log(result);
+      console.log("result", result);
     } catch (err) {
       console.log(err.response);
       setErrors(err.response.data.errors);
@@ -51,12 +59,13 @@ export default function signin() {
             <form className="w-11/12 mt-6" onSubmit={handleSubmit}>
               <div className="mb-3 pt-0">
                 <input
+                  required
                   onChange={(e) => setEmail(e.target.value)}
                   type="email"
                   placeholder="Email"
                   className={classNames(
                     "px-3 py-3 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full",
-                    { "border border-red-500": errors.email }
+                    { "border border-red-500": errors?.global }
                   )}
                 />
               </div>
@@ -67,17 +76,40 @@ export default function signin() {
                   placeholder="Password"
                   className={classNames(
                     "px-3 py-3 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full",
-                    { "border border-red-500": errors.password }
+                    { "border border-red-500": errors?.password }
                   )}
-                  name="password"
                 />
               </div>
+
+              {/* list when error occur */}
+              {errors?.email || errors?.password || errors?.global ? (
+                <div className="p-3 text-sm text-red-500">
+                  <ul className="list-outside">
+                    <li>{errors.email ? errors.email : ""}</li>
+                    <li>{errors.password ? errors.password : ""}</li>
+                    <li>{errors.global ? errors.global : ""}</li>
+                  </ul>
+                </div>
+              ) : null}
+
+              {errors?.options ? (
+                <div className="p-3 text-sm text-red-500">
+                  <span>
+                    {errors.options.email.message + " "}
+                    <Link href={errors.options.email.redirect}>
+                      <a className="text-blue-500">di sini</a>
+                    </Link>
+                  </span>
+                </div>
+              ) : (
+                ""
+              )}
+
               <span>
-                Belum punya akun?, klik{" "}
-                <a className="text-blue-500" href="/signup">
-                  {" "}
-                  di sini{" "}
-                </a>{" "}
+                Belum punya akun?, klik
+                <Link href="/signup">
+                  <a className="text-blue-500"> di sini </a>
+                </Link>
                 untuk register
               </span>
               <input

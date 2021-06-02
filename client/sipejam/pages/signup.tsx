@@ -3,6 +3,8 @@ import { FormEvent, useState, useEffect } from "react";
 import axios from "axios";
 import { Loader } from "../components/Loader";
 import classNames from "classnames";
+import Link from "next/link";
+import { useRouter } from "next/router";
 
 export default function signup() {
   const [username, setUsername] = useState("");
@@ -10,6 +12,8 @@ export default function signup() {
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<any>({});
   const [loading, setLoading] = useState(false);
+
+  const router = useRouter();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -25,6 +29,8 @@ export default function signup() {
       });
       if (result) {
         setLoading(false);
+        // send message here
+        // ....
       }
     } catch (err) {
       setErrors(err.response.data.errors);
@@ -95,11 +101,10 @@ export default function signup() {
               ) : null}
 
               <span>
-                Sudah punya akun?, klik{" "}
-                <a className="text-blue-500" href="/signin">
-                  {" "}
-                  di sini{" "}
-                </a>{" "}
+                Sudah punya akun?, klik
+                <Link href="/signin">
+                  <a className="text-blue-500"> di sini </a>
+                </Link>
                 untuk login
               </span>
               <input
