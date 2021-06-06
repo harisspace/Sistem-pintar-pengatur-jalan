@@ -29,6 +29,8 @@ model systems {
   user_uid        String            @db.Uuid
   created_at      DateTime          @default(now()) @db.Timestamptz(6)
   updated_at      DateTime          @default(now()) @db.Timestamptz(6)
+  status          status
+  image_uri       String?           @unique @db.VarChar(300)
   users           users             @relation(fields: [user_uid], references: [user_uid])
   usersystemlinks usersystemlinks[]
 }
@@ -43,6 +45,7 @@ model users {
   created_at                                  DateTime          @default(now()) @db.Timestamptz(6)
   updated_at                                  DateTime          @default(now()) @db.Timestamptz(6)
   confirmed                                   Boolean           @default(false)
+  image_uri                                   String?           @unique @db.VarChar(300)
   notifications_notifications_from_uidTousers notifications[]   @relation("notifications_from_uidTousers")
   notifications_notifications_to_uidTousers   notifications[]   @relation("notifications_to_uidTousers")
   systems                                     systems[]
@@ -65,4 +68,9 @@ enum role {
   user
   admin
   superadmin
+}
+
+enum status {
+  on
+  off
 }

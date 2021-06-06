@@ -11,3 +11,7 @@ const cookieOptions: any = {
 export function serializeCookie(name: string, value: string) {
   return cookie.serialize(name, value, cookieOptions);
 }
+
+export function destroyCookie(name: string) {
+  return cookie.serialize(name, cookieOptions);
+}

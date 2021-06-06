@@ -8,6 +8,10 @@ import { isOperationalError, logError, logErrorMiddleware, returnError } from ".
 import authRoutes from "./routes/authRoutes";
 import { NotFoundError } from "./utils/errorHandler/NotFoundError";
 import emailRoutes from "./routes/emailRoutes";
+import dashboardRouter from "./routes/dashboardRoutes";
+import userRouter from "./routes/userRoutes";
+import { checkAuth } from "./utils/authentication/checkAuth";
+import path from "path";
 
 dotenv.config();
 
@@ -21,16 +25,24 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 // allow origin and cross origin
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CLIENT_DOMAIN,
+    credentials: true,
+  })
+);
 // settings middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // cookie parser
 app.use(cookieParser());
+app.use(express.static("public"));
 
 // routes - base (api/v1)
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/email", emailRoutes);
+app.use("/api/v1/dashboard", dashboardRouter);
+app.use("/api/v1/user", checkAuth, userRouter);
 
 // handle 404 for endpoint doesnt exist
 app.all("*", (req, res, next) => {

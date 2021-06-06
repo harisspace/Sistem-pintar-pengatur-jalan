@@ -1,15 +1,3 @@
-export interface User {
-  id: number;
-  user_uid: string;
-  username: string;
-  email: string;
-  password: string;
-  user_role: string;
-  confirmed: boolean;
-  created_at: Date;
-  updated_at: Date;
-}
-
 export const SelectUser = {
   id: true,
   user_uid: true,
@@ -17,6 +5,7 @@ export const SelectUser = {
   email: true,
   user_role: true,
   confirmed: true,
+  image_uri: true,
   created_at: true,
   updated_at: true,
 };

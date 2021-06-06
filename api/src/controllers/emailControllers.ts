@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { prisma } from "../server";
-import { verifyToken } from "../utils/Auth/generateToken";
-import { Email } from "../utils/Auth/SendEmail";
+import { verifyToken } from "../utils/authentication/generateToken";
+import { Email } from "../utils/authentication/SendEmail";
 import { ForbiddenError } from "../utils/errorHandler/ForbiddenError";
 import { NotFoundError } from "../utils/errorHandler/NotFoundError";
 import { BadRequestError } from "../utils/errorHandler/BadRequestError";

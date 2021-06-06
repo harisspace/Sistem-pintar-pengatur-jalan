@@ -1,10 +1,11 @@
 import authControllers from "../controllers/authControllers";
-import { Router, Request, Response, NextFunction } from "express";
+import { Router } from "express";
 
 const router = Router();
 
 router.post("/signup", authControllers.signup);
 router.post("/signin", authControllers.signin);
+router.get("/signout", authControllers.signout);
 router.get("/confirmation/:token", authControllers.confirmation);
 // oauth
 router.get("/google/confirmation", authControllers.googleConfirmation);

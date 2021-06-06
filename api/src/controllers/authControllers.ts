@@ -1,18 +1,19 @@
 import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { prisma } from "../server";
-import { generateToken, verifyToken } from "../utils/Auth/generateToken";
+import { generateToken, verifyToken } from "../utils/authentication/generateToken";
 import { BadRequestError } from "../utils/errorHandler/BadRequestError";
 import { InternalError } from "../utils/errorHandler/InternalError";
 import { signinValidator, signupValidator } from "../utils/validator/authValidator";
-import { SelectUser, User } from "../utils/Interface/UserInterface";
+import { SelectUser } from "../utils/Interface/UserInterface";
 import { Signin, Signup } from "../utils/Interface/authInterface";
-import { Email } from "../utils/Auth/SendEmail";
+import { Email } from "../utils/authentication/SendEmail";
 import { UnauthorizedError } from "../utils/errorHandler/UnauthorizedError";
 import { NotFoundError } from "../utils/errorHandler/NotFoundError";
-import { serializeCookie } from "../utils/Auth/cookie";
+import { serializeCookie } from "../utils/authentication/cookie";
 import queryString from "querystring";
 import axios from "axios";
+import { users } from ".prisma/client";
 
 // controllers
 export default {
@@ -62,7 +63,7 @@ export default {
     const hashPassword = await bcrypt.hash(password, salt);
 
     // save to database
-    let user: Partial<User>;
+    let user: Partial<users>;
     try {
       user = await prisma.users.create({
         data: {
@@ -93,7 +94,7 @@ export default {
       return next(new BadRequestError("Invalid email", errors));
     }
 
-    let user: Partial<User> | null;
+    let user: Partial<users> | null;
 
     try {
       user = await prisma.users.findUnique({ where: { email } });
@@ -135,7 +136,7 @@ export default {
     }
 
     // set to cookie
-    serializeCookie("token", token);
+    res.set("Set-Cookie", serializeCookie("token", token));
 
     // remove password
     const { password: passwordDB, ...userWithoutPass } = user;
@@ -186,6 +187,8 @@ export default {
   googleConfirmation: async (req: Request, res: Response, next: NextFunction) => {
     const { code } = req.query;
 
+    console.log(code);
+
     if (!code) {
       return next(new BadRequestError("Invalid query string"));
     }
@@ -223,19 +226,42 @@ export default {
 
     const { email, name, pictureUri } = data;
 
-    // // inser to db data users
-    // let user: any;
-    // try {
-    //   user = await prisma.users.create({
-    //     data: { email: email, user_role: "user", password: "google", username: name, confirmed: true },
-    //   });
-    //   if (!user) {
-    //     return next(new InternalError("Cannot create user"));
-    //   }
-    // } catch (err) {
-    //   return next(new InternalError("Cannot create user", err));
-    // }
+    // insert to db data users if does't exist, if exist just return user
+    let user: any;
+    let isUserRegistered: any;
+    try {
+      isUserRegistered = await prisma.users.findUnique({ where: { email }, select: SelectUser });
 
-    return res.json({ success: true, user: { ...data } });
+      if (!isUserRegistered) {
+        user = await prisma.users.create({
+          data: { email: email, user_role: "user", password: "google", username: name, confirmed: true },
+        });
+
+        if (!user) {
+          return next(new InternalError("Cannot create user"));
+        }
+      }
+    } catch (err) {
+      return next(new InternalError("Something went wrong", err));
+    }
+
+    // set google token
+    const oauth_token = generateToken({ username: name, email });
+    res.set("Set-Cookie", serializeCookie("oauth_token", oauth_token));
+
+    if (isUserRegistered) {
+      return res.json({ success: true, user: isUserRegistered });
+    } else {
+      return res.json({ success: true, user });
+    }
+  },
+
+  signout: async (req: Request, res: Response, next: NextFunction) => {
+    const token = req.cookies.token;
+    const oauth_token = req.cookies.oauth_token;
+    if (token) res.clearCookie("token");
+    if (oauth_token) res.clearCookie("oauth_token");
+
+    return res.json({ success: true, redirect: "/signin" });
   },
 };
