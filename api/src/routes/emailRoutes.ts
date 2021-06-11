@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response, Router } from "express";
 import queryString from "querystring";
-import emailControllers from "../controllers/emailControllers";
+import * as emailControllers from "../controllers/emailControllers";
 
 const router = Router();
 

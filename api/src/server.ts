@@ -10,8 +10,7 @@ import { NotFoundError } from "./utils/errorHandler/NotFoundError";
 import emailRoutes from "./routes/emailRoutes";
 import dashboardRouter from "./routes/dashboardRoutes";
 import userRouter from "./routes/userRoutes";
-import { checkAuth } from "./utils/authentication/checkAuth";
-import path from "path";
+import systemRoutes from "./routes/systemRoutes";
 
 dotenv.config();
 
@@ -42,7 +41,8 @@ app.use(express.static("public"));
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/email", emailRoutes);
 app.use("/api/v1/dashboard", dashboardRouter);
-app.use("/api/v1/user", checkAuth, userRouter);
+app.use("/api/v1/user", userRouter);
+app.use("/api/v1/system", systemRoutes);
 
 // handle 404 for endpoint doesnt exist
 app.all("*", (req, res, next) => {

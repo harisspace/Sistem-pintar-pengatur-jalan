@@ -4,7 +4,6 @@ import { ForbiddenError } from "../errorHandler/ForbiddenError";
 
 export const isMe = (req: Request, res: Response, next: NextFunction) => {
   const { username } = req.params;
-  console.log(username);
 
   const user: Partial<users> = res.locals.user;
 

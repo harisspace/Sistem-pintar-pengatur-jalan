@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { UnauthorizedError } from "../errorHandler/UnauthorizedError";
 import jwt from "jsonwebtoken";
 import { prisma } from "../../server";
-import { SelectUser } from "../Interface/UserInterface";
+import { SelectUser } from "../Interface/Select.db.cols";
 import { InternalError } from "../errorHandler/InternalError";
 import { users } from ".prisma/client";
 import { NotFoundError } from "../errorHandler/NotFoundError";

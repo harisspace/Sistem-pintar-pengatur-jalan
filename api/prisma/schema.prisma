@@ -24,13 +24,13 @@ model notifications {
 model systems {
   id              Int               @id @default(autoincrement())
   system_uid      String            @unique @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  name            String            @db.VarChar(250)
   placed          String            @db.VarChar(300)
   user_uid        String            @db.Uuid
   created_at      DateTime          @default(now()) @db.Timestamptz(6)
   updated_at      DateTime          @default(now()) @db.Timestamptz(6)
   status          status
-  image_uri       String?           @unique @db.VarChar(300)
+  image_uri       String?           @db.VarChar(250)
+  name            String            @unique @db.VarChar(200)
   users           users             @relation(fields: [user_uid], references: [user_uid])
   usersystemlinks usersystemlinks[]
 }
@@ -45,7 +45,7 @@ model users {
   created_at                                  DateTime          @default(now()) @db.Timestamptz(6)
   updated_at                                  DateTime          @default(now()) @db.Timestamptz(6)
   confirmed                                   Boolean           @default(false)
-  image_uri                                   String?           @unique @db.VarChar(300)
+  image_uri                                   String?           @db.VarChar(250)
   notifications_notifications_from_uidTousers notifications[]   @relation("notifications_from_uidTousers")
   notifications_notifications_to_uidTousers   notifications[]   @relation("notifications_to_uidTousers")
   systems                                     systems[]

@@ -9,3 +9,14 @@ export const SelectUser = {
   created_at: true,
   updated_at: true,
 };
+
+export const SelectSystem = {
+  id: true,
+  system_uid: true,
+  name: true,
+  placed: true,
+  status: true,
+  image_uri: true,
+  created_at: true,
+  updated_at: true,
+};
