@@ -2,9 +2,9 @@ import { google } from "googleapis";
 import { GetServerSideProps } from "next";
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const clientId = "233104507778-v37igv30fgigluejsfbjldk7l9l8lj8u.apps.googleusercontent.com";
-  const clientSecret = "98P8LU_JJHUQoFJbc62VVa0Y";
-  const redirectUri = "http://localhost:3000/auth/oauth/google/confirmation";
+  const clientId = process.env.CLIENT_ID;
+  const clientSecret = process.env.CLIENT_SECRET;
+  const redirectUri = process.env.REDIRECT_URL;
 
   const url = await new google.auth.OAuth2({
     clientId,

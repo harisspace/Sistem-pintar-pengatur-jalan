@@ -6,7 +6,7 @@ import { Provider } from "react-redux";
 import { persistor, store } from "../store/store";
 import { PersistGate } from "redux-persist/integration/react";
 
-axios.defaults.baseURL = "http://localhost:4000/api/v1";
+axios.defaults.baseURL = process.env.NEXT_PUBLIC_BASE_URL;
 axios.defaults.withCredentials = true;
 
 function MyApp({ Component, pageProps }: AppProps) {
