@@ -1,43 +1,39 @@
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { FormEvent, useState } from "react";
-import axios from "axios";
+import { FormEvent, useEffect, useState } from "react";
 import { Loader } from "../components/Loader";
 import classNames from "classnames";
+import { GoogleOAuth } from "../components/GoogleOAuth";
+import { Notification } from "../components/Notification";
+import { connect } from "react-redux";
+import { signinStart } from "../store/actions/auth.actions";
 
-export default function signin() {
+interface Props {
+  user: object;
+  signinStart: (emailAndPassword: object) => {};
+  authenticated: boolean;
+  loading: boolean;
+  error: any;
+}
+
+function signin({ loading, signinStart: signinStartProps, authenticated, error }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<any>({});
-  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
+
+  useEffect(() => {
+    if (!router.isReady) return;
+    console.log(authenticated);
+
+    authenticated ? router.push("/") : null;
+  }, [router, authenticated]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // set loading true
-    setLoading(true);
-
-    try {
-      const result = await axios.post("/auth/signin", {
-        email,
-        password,
-      });
-      if (result) {
-        setLoading(false);
-
-        if (result.data.user) {
-          router.push(result.data.redirect);
-        }
-      }
-      console.log("result", result);
-    } catch (err) {
-      console.log(err.response);
-      setErrors(err.response.data.errors);
-      setLoading(false);
-    }
+    signinStartProps({ email, password });
   };
 
   return (
@@ -54,7 +50,7 @@ export default function signin() {
         <div className="col-span-6 flex items-center">
           <div className="ml-3 p-8 w-6/12 shadow-lg">
             <h1>LOGO</h1>
-            <div className="mt-4">SIGNIN WITH GOOGLE</div>
+            <GoogleOAuth />
 
             <form className="w-11/12 mt-6" onSubmit={handleSubmit}>
               <div className="mb-3 pt-0">
@@ -63,10 +59,7 @@ export default function signin() {
                   onChange={(e) => setEmail(e.target.value)}
                   type="email"
                   placeholder="Email"
-                  className={classNames(
-                    "px-3 py-3 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full",
-                    { "border border-red-500": errors?.global }
-                  )}
+                  className={classNames("input", { "border border-red-500": error?.global })}
                 />
               </div>
               <div className="mb-3 pt-0">
@@ -76,27 +69,27 @@ export default function signin() {
                   placeholder="Password"
                   className={classNames(
                     "px-3 py-3 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full",
-                    { "border border-red-500": errors?.password }
+                    { "border border-red-500": error?.password }
                   )}
                 />
               </div>
 
               {/* list when error occur */}
-              {errors?.email || errors?.password || errors?.global ? (
+              {error?.email || error?.password || error?.global ? (
                 <div className="p-3 text-sm text-red-500">
                   <ul className="list-outside">
-                    <li>{errors.email ? errors.email : ""}</li>
-                    <li>{errors.password ? errors.password : ""}</li>
-                    <li>{errors.global ? errors.global : ""}</li>
+                    <li>{error.email ? error.email : ""}</li>
+                    <li>{error.password ? error.password : ""}</li>
+                    <li>{error.global ? error.global : ""}</li>
                   </ul>
                 </div>
               ) : null}
 
-              {errors?.options ? (
+              {error?.options ? (
                 <div className="p-3 text-sm text-red-500">
                   <span>
-                    {errors.options.email.message + " "}
-                    <Link href={errors.options.email.redirect}>
+                    {error.options.email.message + " "}
+                    <Link href={error.options.email.redirect}>
                       <a className="text-blue-500">di sini</a>
                     </Link>
                   </span>
@@ -123,3 +116,21 @@ export default function signin() {
     </div>
   );
 }
+
+const mapStateToProps = (state: any) => {
+  return {
+    authenticated: state.authReducer.authenticated,
+    loading: state.authReducer.loading,
+    error: state.authReducer.error,
+  };
+};
+
+const mapDispatchToProps = (dispatch: any, ownProps: any) => {
+  console.log(dispatch);
+
+  return {
+    signinStart: (payload: any) => dispatch(signinStart(payload)),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(signin);

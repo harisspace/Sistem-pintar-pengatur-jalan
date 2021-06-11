@@ -1,41 +1,35 @@
 import Head from "next/head";
-import { FormEvent, useState, useEffect } from "react";
+import { FormEvent, useState } from "react";
 import axios from "axios";
 import { Loader } from "../components/Loader";
 import classNames from "classnames";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { GoogleOAuth } from "../components/GoogleOAuth";
+import { Notification } from "../components/Notification";
+import { signupStart } from "../store/actions/auth.actions";
+import { connect } from "react-redux";
 
-export default function signup() {
+interface Props {
+  signupStart: (payload: object) => {};
+  loading: boolean;
+  message: string;
+  error: any;
+}
+
+function signup({ signupStart: signupStartProps, message, loading, error }: Props) {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<any>({});
-  const [loading, setLoading] = useState(false);
-
-  const router = useRouter();
+  console.log(message, loading, error);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // set loading
-    setLoading(true);
+    signupStartProps({ username, email, password });
 
-    try {
-      const result = await axios.post("/auth/signup", {
-        username,
-        email,
-        password,
-      });
-      if (result) {
-        setLoading(false);
-        // send message here
-        // ....
-      }
-    } catch (err) {
-      setErrors(err.response.data.errors);
-      setLoading(false);
-    }
+    setUsername("");
+    setEmail("");
+    setPassword("");
   };
 
   return (
@@ -44,6 +38,7 @@ export default function signup() {
         <title>Signup</title>
       </Head>
       {loading ? <Loader /> : null}
+      {message ? <Notification message={message} /> : null}
       <div className="grid grid-cols-8 max-h-screen h-screen">
         <div className="col-span-2 bg-gradient-to-l from-primary to-secondary">
           <div className="bg-sistem h-screen bg-contain bg-no-repeat bg-center"></div>
@@ -52,7 +47,7 @@ export default function signup() {
         <div className="col-span-6 flex items-center">
           <div className="ml-3 p-8 w-6/12 shadow-lg">
             <h1>LOGO</h1>
-            <div className="mt-4">SIGNIN WITH GOOGLE</div>
+            <GoogleOAuth />
 
             <form className="w-11/12 mt-6" onSubmit={handleSubmit}>
               <div className="mb-3 pt-0">
@@ -61,10 +56,7 @@ export default function signup() {
                   onChange={(e) => setEmail(e.target.value)}
                   type="email"
                   placeholder="Email"
-                  className={classNames(
-                    "px-3 py-3 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full",
-                    { "border-red-500 border": errors.email }
-                  )}
+                  className={classNames("input", { "border-red-500 border": error?.email })}
                 />
               </div>
               <div className="mb-3 pt-0">
@@ -73,10 +65,7 @@ export default function signup() {
                   onChange={(e) => setUsername(e.target.value)}
                   type="text"
                   placeholder="Username"
-                  className={classNames(
-                    "px-3 py-3 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full",
-                    { "border-red-500 border": errors.username }
-                  )}
+                  className={classNames("input", { "border-red-500 border": error?.username })}
                   name="username"
                 />
               </div>
@@ -86,16 +75,16 @@ export default function signup() {
                   onChange={(e) => setPassword(e.target.value)}
                   type="password"
                   placeholder="Password"
-                  className="px-3 py-3 relative bg-white rounded text-sm border-0 shadow outline-none focus:outline-none focus:ring w-full"
+                  className="input"
                   name="password"
                 />
               </div>
 
               {/* list when error occur */}
-              {errors.email || errors.username ? (
+              {error?.email || error?.username ? (
                 <div className="p-3 text-sm text-red-500">
                   <ul className="list-inside">
-                    <li>{errors.email}</li>
+                    <li>{error.email}</li>
                   </ul>
                 </div>
               ) : null}
@@ -118,3 +107,19 @@ export default function signup() {
     </div>
   );
 }
+
+const mapStateToProps = (state: any) => {
+  return {
+    loading: state.authReducer.loading,
+    message: state.authReducer.message,
+    error: state.authReducer.error,
+  };
+};
+
+const mapDispatchToProps = (dispatch: Function) => {
+  return {
+    signupStart: (payload: object) => dispatch(signupStart(payload)),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(signup);

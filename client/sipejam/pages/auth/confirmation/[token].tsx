@@ -21,6 +21,8 @@ export default function Confirmation() {
 
     const { token } = router.query;
 
+    if (!token) router.push("/");
+
     fetchConfirmation(token)
       .then((res) => {
         console.log(res);

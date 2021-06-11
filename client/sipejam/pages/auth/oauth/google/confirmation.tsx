@@ -1,49 +1,54 @@
-import { GetServerSideProps } from "next";
 import axios from "axios";
 import queryString from "querystring";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import { Loader } from "../../../../components/Loader";
+import { connect } from "react-redux";
+import { OAuthStart } from "../../../../store/actions/auth.actions";
 
-export default function Confirmation() {
-  return null;
+interface Props {
+  OAuthStart: (codeQueryString: string) => {};
+  error: any;
+  authenticated: boolean;
+  loading: boolean;
 }
 
-export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  console.log(ctx.req.url, ctx.query);
-  const { code } = ctx.query;
-  console.log(code);
+function Confirmation({ OAuthStart: OAuthStartProps, error, loading, authenticated }: Props) {
+  const router = useRouter();
 
-  if (!code) {
-    return {
-      redirect: {
-        permanent: false,
-        destination: "/",
-      },
-    };
-  }
+  useEffect(() => {
+    if (!router.isReady) return;
 
-  const setCodeQueryString = queryString.stringify({ code });
-  console.log(setCodeQueryString);
+    const { code } = router.query;
 
-  // when get token send token to backend
-  await axios
-    .get(`/auth/google/confirmation?${setCodeQueryString}`)
-    .then((res) => {
-      // do somestuff here
-      console.log(res.data); // e.g (data user)
-    })
-    .catch((err) => {
-      console.log(err.response);
-      return {
-        redirect: {
-          permanent: false,
-          destination: "/",
-        },
-      };
-    });
+    if (!code) router.push("/");
 
+    const setCodeQueryString = queryString.stringify({ code });
+    console.log(setCodeQueryString);
+
+    // when get code send code to backend
+
+    OAuthStartProps(setCodeQueryString);
+
+    if (error) router.push("/signin");
+
+    if (authenticated) router.push("/dashboard");
+  }, [router, loading, authenticated]);
+
+  return <div>{loading ? <Loader /> : ""}</div>;
+}
+
+const mapStateToProps = (state: any) => {
   return {
-    redirect: {
-      permanent: false,
-      destination: "/",
-    },
+    error: state.authReducer.error,
+    authenticated: state.authReducer.authenticated,
   };
 };
+
+const mapDispatchToProps = (dispatch: Function) => {
+  return {
+    OAuthStart: (codeQueryString: string) => dispatch(OAuthStart(codeQueryString)),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Confirmation);
