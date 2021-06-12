@@ -273,16 +273,21 @@ export const signout = async (req: Request, res: Response, next: NextFunction) =
 };
 
 export const checkCookie = async (req: Request, res: Response, next: NextFunction) => {
-  const { token }: { token: string } = req.cookies;
+  let token = req.headers.authorization;
+
   if (!token) return next(new UnauthorizedError("Token is not exist"));
 
+  token = token.split(" ")[1];
+
+  let user: users | null;
   try {
     const { email, exp }: any = verifyToken(token, process.env.JWT_SECRET!);
     if (exp * 1000 < Date.now()) throw new Error("expired token");
-    const user = await prisma.users.findUnique({ where: { email } });
+    user = await prisma.users.findUnique({ where: { email } });
+    if (!user) return next(new NotFoundError("User not found"));
   } catch (err) {
     return next(new UnauthorizedError("Token is not valid", err));
   }
 
-  return res.json({ success: true });
+  return res.json({ success: true, user });
 };

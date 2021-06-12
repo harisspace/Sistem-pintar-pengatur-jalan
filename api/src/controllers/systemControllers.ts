@@ -118,6 +118,7 @@ export const deleteSystem = async (req: Request, res: Response, next: NextFuncti
   let system;
   try {
     system = await prisma.systems.delete({ where: { name } });
+    if (!system) return next(new NotFoundError("System not found, invalid name params"));
   } catch (err) {
     return next(new InternalError("Something went wrong"));
   }
