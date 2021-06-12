@@ -25,10 +25,9 @@ function signin({ loading, signinStart: signinStartProps, authenticated, error }
 
   useEffect(() => {
     if (!router.isReady) return;
-    console.log(authenticated);
 
     authenticated ? router.push("/") : null;
-  }, [router, authenticated]);
+  }, [authenticated]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();

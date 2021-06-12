@@ -2,14 +2,26 @@ import Link from "next/link";
 import { ChangeEvent } from "react";
 import { AiOutlineSearch } from "react-icons/ai";
 import { connect } from "react-redux";
+import queryString from "querystring";
+import { findSystems } from "../api/system.request";
+import { useState } from "react";
 
 interface Props {
   authenticated: boolean;
 }
 
 const Navbar: React.FC<Props> = ({ authenticated }) => {
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.value);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const query = queryString.stringify({ name: value });
+    console.log(value, query);
+    const res = await findSystems(query);
+
+    if (res instanceof Error) setError(res.message);
+    if (res) setError(null);
+    console.log(res);
   };
 
   return (

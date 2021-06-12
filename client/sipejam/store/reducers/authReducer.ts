@@ -9,8 +9,6 @@ const initialState = {
 };
 
 export const authReducer = (state = initialState, action: any) => {
-  console.log(action);
-
   switch (action.type) {
     case authActionTypes.SIGN_IN_START:
     case authActionTypes.SIGN_UP_START:
