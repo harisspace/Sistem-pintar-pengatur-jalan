@@ -5,42 +5,96 @@ import Footer from "../components/Footer";
 import { GetServerSideProps } from "next";
 import nookies from "nookies";
 import axios from "axios";
+import { SystemCardList } from "../components/SystemCardList";
+import { checkCookie } from "../api/auth.request";
+import { getSystems } from "../api/system.request";
+import { useEffect, useState } from "react";
+import { getSystemsStart } from "../store/actions/system.action";
+import Cookies from "js-cookie";
+import { connect } from "react-redux";
+import { Loader } from "../components/Loader";
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const unauthRedirect = {
-    redirect: {
-      destination: "/signin",
-      permanent: false,
-    },
+  let res: any;
+
+  const unauthenticated = {
+    res: null,
+    authenticated: false,
+    error: null,
   };
 
   const { token, oauth_token } = nookies.get(ctx);
 
   if (!token && !oauth_token) {
-    console.log("in");
-
-    return unauthRedirect;
+    return {
+      props: { ...unauthenticated },
+    };
   }
 
-  const res = await axios
-    .get("/auth/checkCookie", { headers: { Authorization: `Bearer ${token || oauth_token}` } })
-    .catch((err) => err);
-  if (res instanceof Error) return unauthRedirect;
-  if (!res) return unauthRedirect;
+  res = await checkCookie(token || oauth_token).catch((err) => err);
+
+  if (res instanceof Error)
+    return {
+      props: { ...unauthenticated, error: res },
+    };
+  if (!res)
+    return {
+      props: { ...unauthenticated },
+    };
+
+  // let systems: any;
+  // if (res) {
+  //   systems = await getSystems(token).catch((err) => err);
+  //   if (systems instanceof Error)
+  //     return {
+  //       props: { ...unauthenticated, error: systems },
+  //     };
+  //   if (!systems) {
+  //     return {
+  //       props: {
+  //         authenticated: true,
+  //         systems: [],
+  //         user: res.user,
+  //       },
+  //     };
+  //   }
+  // }
 
   return {
     props: {
-      result: res.data,
+      authenticated: true,
+      user: res.user,
+      // systems: systems,
     },
   };
 };
 
 interface Props {
-  result: object;
+  authenticated: boolean;
+  user: any;
+  systems: object[];
+  getSystemsStart: (token: string) => {};
+  error: any;
+  loading: boolean;
 }
 
-const Home: React.FC<Props> = ({ result }) => {
-  console.log(result);
+const Home: React.FC<Props> = ({
+  authenticated,
+  user,
+  systems,
+  getSystemsStart: getSystemsStartProps,
+  loading,
+  error,
+}) => {
+  const token = Cookies.get("token");
+
+  useEffect(() => {
+    getSystemsStartProps(token!);
+  }, []);
+
+  console.log(authenticated, user, systems);
+
+  const getData = loading ? <Loader /> : <SystemCardList systems={systems} user={user} />;
 
   return (
     <div>
@@ -48,10 +102,10 @@ const Home: React.FC<Props> = ({ result }) => {
         <title>Home</title>
       </Head>
       <div className="bg-gradient-to-b from-primary via-secondary">
-        <Navbar />
+        <Navbar authenticated={authenticated} />
 
-        {result ? (
-          <h1>authenticated</h1>
+        {authenticated ? (
+          getData
         ) : (
           <>
             <div className="mt-20">
@@ -92,4 +146,19 @@ const Home: React.FC<Props> = ({ result }) => {
   );
 };
 
-export default Home;
+const mapStateToProps = (state: any) => {
+  console.log(state);
+  return {
+    systems: state.systemReducer.systems,
+    loading: state.systemReducer.loading,
+    error: state.systemReducer.error,
+  };
+};
+
+const mapDispatchToProps = (dispatch: Function) => {
+  return {
+    getSystemsStart: (token: string) => dispatch(getSystemsStart(token)),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Home);

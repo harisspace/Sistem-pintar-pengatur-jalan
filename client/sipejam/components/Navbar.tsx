@@ -34,14 +34,18 @@ const Navbar: React.FC<Props> = ({ authenticated }) => {
             </a>
           </Link>
         </span>
-        <div>
-          <div className="relative flex">
-            <span className="z-10 h-full items-center justify-center absolute flex px-2">
-              <AiOutlineSearch />
-            </span>
-            <input type="text" placeholder="Find system" className="search" onChange={handleChange} />
+        {authenticated ? (
+          <div>
+            <div className="relative flex">
+              <span className="z-10 h-full items-center justify-center absolute flex px-2">
+                <AiOutlineSearch />
+              </span>
+              <input type="text" placeholder="Find system" className="search" onChange={handleChange} />
+            </div>
           </div>
-        </div>
+        ) : (
+          ""
+        )}
         <div>
           {authenticated ? (
             <ul className="flex">
@@ -56,9 +60,7 @@ const Navbar: React.FC<Props> = ({ authenticated }) => {
                 </Link>
               </li>
               <li className="">
-                <Link href="/signout">
-                  <a>signout</a>
-                </Link>
+                <a href="/signout">Signout</a>
               </li>
             </ul>
           ) : (
@@ -86,10 +88,4 @@ const Navbar: React.FC<Props> = ({ authenticated }) => {
   );
 };
 
-const mapStateToProps = (state: any, ownProps: any) => {
-  return {
-    authenticated: state.authReducer.authenticated,
-  };
-};
-
-export default connect(mapStateToProps)(Navbar);
+export default Navbar;

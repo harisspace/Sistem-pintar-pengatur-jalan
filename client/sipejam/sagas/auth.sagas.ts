@@ -1,5 +1,5 @@
 import { all, call, put, takeLatest } from "redux-saga/effects";
-import { signin, signup, OAuthData, signout } from "../api/auth.request";
+import { signin, signup, OAuthData } from "../api/auth.request";
 import {
   OAuthFailure,
   OAuthSuccess,

@@ -29,3 +29,13 @@ export const OAuthData = async (codeQueryString: string) => {
   const user = res.data;
   return user;
 };
+
+export const checkCookie = async (token: string) => {
+  const res = await axios.get(`/auth/checkCookie`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return res.data;
+};
