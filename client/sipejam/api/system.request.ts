@@ -1,19 +1,14 @@
 import axios from "axios";
+import Cookies from "js-cookie";
 
-export const getSystems = async (token: string) => {
-  const res = await axios.get("/system", {
-    headers: {
-      Cookie: `token=${token}`,
-    },
-  });
+export const getSystems = async () => {
+  const res = await axios.get("/system");
 
   return res.data.systems;
 };
 
 export const findSystems = async (query: string) => {
-  const res = await axios.get(`/system/find?${query}`).catch((err) => err);
-  if (res instanceof Error) return res;
-  // console.log(res.data);
+  const res = await axios.get(`/system/find?${query}`);
 
-  return res.data.systems;
+  return res;
 };

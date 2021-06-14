@@ -4,13 +4,10 @@ import Image from "next/image";
 import Footer from "../components/Footer";
 import { GetServerSideProps } from "next";
 import nookies from "nookies";
-import axios from "axios";
 import { SystemCardList } from "../components/SystemCardList";
 import { checkCookie } from "../api/auth.request";
-import { getSystems } from "../api/system.request";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { getSystemsStart } from "../store/actions/system.action";
-import Cookies from "js-cookie";
 import { connect } from "react-redux";
 import { Loader } from "../components/Loader";
 
@@ -42,29 +39,10 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       props: { ...unauthenticated },
     };
 
-  // let systems: any;
-  // if (res) {
-  //   systems = await getSystems(token).catch((err) => err);
-  //   if (systems instanceof Error)
-  //     return {
-  //       props: { ...unauthenticated, error: systems },
-  //     };
-  //   if (!systems) {
-  //     return {
-  //       props: {
-  //         authenticated: true,
-  //         systems: [],
-  //         user: res.user,
-  //       },
-  //     };
-  //   }
-  // }
-
   return {
     props: {
       authenticated: true,
       user: res.user,
-      // systems: systems,
     },
   };
 };
@@ -73,7 +51,7 @@ interface Props {
   authenticated: boolean;
   user: any;
   systems: object[];
-  getSystemsStart: (token: string) => {};
+  getSystemsStart: () => {};
   error: any;
   loading: boolean;
 }
@@ -86,13 +64,9 @@ const Home: React.FC<Props> = ({
   loading,
   error,
 }) => {
-  const token = Cookies.get("token");
-
   useEffect(() => {
-    getSystemsStartProps(token!);
+    getSystemsStartProps();
   }, []);
-
-  console.log(authenticated, user, systems);
 
   const getData = loading ? <Loader /> : <SystemCardList systems={systems} user={user} />;
 
@@ -157,7 +131,7 @@ const mapStateToProps = (state: any) => {
 
 const mapDispatchToProps = (dispatch: Function) => {
   return {
-    getSystemsStart: (token: string) => dispatch(getSystemsStart(token)),
+    getSystemsStart: () => dispatch(getSystemsStart()),
   };
 };
 

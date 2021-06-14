@@ -4,9 +4,9 @@ import { getSystemsFailure, getSystemsSuccess } from "../store/actions/system.ac
 import { systemActionTypes } from "../store/types/system.types";
 
 // === worker ===
-function* workerGetSystems({ payload }: any): any {
+function* workerGetSystems(): any {
   try {
-    const data = yield getSystems(payload);
+    const data = yield getSystems();
     yield put(getSystemsSuccess(data));
   } catch (err) {
     yield put(getSystemsFailure(err.response));

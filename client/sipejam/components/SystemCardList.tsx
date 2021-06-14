@@ -7,8 +7,6 @@ interface Props {
 }
 
 export const SystemCardList: React.FC<Props> = ({ systems, user }) => {
-  console.log(systems);
-
   return (
     <div className="min-h-screen">
       {systems.map((system: any) => (

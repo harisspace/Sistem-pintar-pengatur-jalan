@@ -3,7 +3,6 @@ import Image from "next/image";
 import { MdPlace } from "react-icons/md";
 import { RiAdminLine } from "react-icons/ri";
 import { useEffect } from "react";
-import classNames from "classnames";
 
 interface Props {
   system: any;
@@ -12,7 +11,6 @@ interface Props {
 
 export const SystemCard: React.FC<Props> = ({ system, user }) => {
   const [isAdmin, setIsAdmin] = useState(false);
-  console.log(system, user);
 
   useEffect(() => {
     if (system.usersystemlinks.length < 1) {

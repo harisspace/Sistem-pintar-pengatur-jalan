@@ -1,8 +1,7 @@
 import { systemActionTypes } from "../types/system.types";
 
-export const getSystemsStart = (token: any) => ({
+export const getSystemsStart = () => ({
   type: systemActionTypes.GET_SYSTEMS_START,
-  payload: token,
 });
 
 export const getSystemsFailure = (err: any) => ({
