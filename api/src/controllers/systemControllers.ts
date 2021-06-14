@@ -8,17 +8,27 @@ import { SelectSystem, SelectUser } from "../utils/Interface/Select.db.cols";
 import { CreateSystem } from "../utils/Interface/systemInterface";
 import { createSystemValidator } from "../utils/validator/systemValidator";
 import fs from "fs";
+import { verifyToken } from "../utils/authentication/generateToken";
+import { UnauthorizedError } from "../utils/errorHandler/UnauthorizedError";
+import { ForbiddenError } from "../utils/errorHandler/ForbiddenError";
 // === GET METHOD ===
 
 // get all systems
 export const getSystems = async (req: Request, res: Response, next: NextFunction) => {
   const systems = await prisma.systems
-    .findMany({ orderBy: { created_at: "desc" }, select: { ...SelectSystem, users: { select: SelectUser } } })
-    .catch((err) => next(new InternalError("Something went wrong", err)));
+    .findMany({
+      orderBy: { created_at: "desc" },
+      select: { ...SelectSystem, users: { select: SelectUser }, usersystemlinks: { select: { user_uid: true } } },
+    })
+    .catch((err) => err);
 
-  if (systems) return next(new NotFoundError("There's no system yet"));
+  if (systems instanceof Error) return next(new InternalError("Something went wrong"));
 
-  res.json(systems);
+  if (systems) {
+    if (systems.length < 1) return next(new NotFoundError("There's no system yet"));
+  }
+
+  res.json({ systems });
 };
 
 export const findSystem = async (req: Request, res: Response, next: NextFunction) => {
@@ -124,4 +134,52 @@ export const deleteSystem = async (req: Request, res: Response, next: NextFuncti
   }
 
   return res.json({ success: true, system });
+};
+
+// === POST METHOD ===
+export const requestTobeAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  const { systemName } = req.params;
+  const token = req.headers.authorization?.split(" ")[1]; // ["Bearer", "token"]
+  const { user_uid } = req.body; // uuid from user request
+  console.log(token);
+
+  if (!token) return next(new UnauthorizedError("Not unauthorized"));
+
+  // check system name
+  const system = await prisma.systems.findUnique({ where: { name: systemName } }).catch((err) => err);
+  if (system instanceof Error) return next(new InternalError("Something went wrong"));
+  if (!system) return next(new NotFoundError("System not found"));
+
+  let username: string;
+  try {
+    const decodedToken: any = verifyToken(token, process.env.JWT_SECRET!);
+    username = decodedToken.username;
+  } catch (err) {
+    console.log(err);
+    return next(new InternalError("Something went wrong"));
+  }
+
+  const user = await prisma.users.findUnique({ where: { username }, select: SelectUser }).catch((err) => err);
+  if (user instanceof Error) {
+    return next(new InternalError("Something went wrong"));
+  }
+
+  if (user.user_role !== "superadmin") {
+    return next(new ForbiddenError("You're not allowed"));
+  }
+
+  // this superadmin
+  const findSystemLink = await prisma.usersystemlinks
+    .findFirst({ where: { user_uid, system_uid: system.system_uid } })
+    .catch((err) => err);
+  if (findSystemLink instanceof Error) return next(new InternalError("Something went wrong"));
+
+  if (findSystemLink) return next(new ForbiddenError("You're still admin on this system"));
+
+  // otherwise create admin for this system
+  const systemLink = await prisma.usersystemlinks.create({
+    data: { user_uid, system_role: "admin", system_uid: system.system_uid },
+  });
+
+  return res.json({ success: true, systemLink });
 };
