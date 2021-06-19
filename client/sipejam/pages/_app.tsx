@@ -3,7 +3,7 @@ import type { AppProps } from "next/app";
 import { Layout } from "../components/Layout";
 import axios from "axios";
 import { Provider } from "react-redux";
-import { persistor, store } from "../store/store";
+import { store, persistor } from "../store/store";
 import { PersistGate } from "redux-persist/integration/react";
 
 axios.defaults.baseURL = process.env.NEXT_PUBLIC_BASE_URL_API;

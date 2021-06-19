@@ -5,12 +5,16 @@ import queryString from "querystring";
 import { findSystems } from "../api/system.request";
 import { useState } from "react";
 import { SearchCardList } from "./SearchCardList";
+import { AiOutlineHome, AiOutlineLogout } from "react-icons/ai";
+import { IoAdd } from "react-icons/io5";
+import { IoIosNotificationsOutline } from "react-icons/io";
 
 interface Props {
   authenticated: boolean;
+  isSuperAdmin: boolean;
 }
 
-const Navbar: React.FC<Props> = ({ authenticated }) => {
+const Navbar: React.FC<Props> = ({ authenticated, isSuperAdmin }) => {
   const [error, setError] = useState<string | null>(null);
   const [systems, setSystems] = useState<any>([]);
   const [loading, setLoading] = useState(true);
@@ -33,11 +37,11 @@ const Navbar: React.FC<Props> = ({ authenticated }) => {
     }
   };
 
-  console.log(systems, error, loading);
+  console.log(isSuperAdmin);
 
   return (
     <div className="w-full shadow-md sticky top-0 z-10">
-      <div className="flex justify-between py-3 w-wrapper m-auto">
+      <div className="flex justify-between items-center py-3 w-wrapper m-auto">
         <span>
           <Link href="/">
             <a>
@@ -71,19 +75,34 @@ const Navbar: React.FC<Props> = ({ authenticated }) => {
         <div>
           {authenticated ? (
             <ul className="flex">
-              <li className="mr-8">
-                <Link href="/">
-                  <a>Home</a>
-                </Link>
-              </li>
-              <li className="mr-8">
-                <Link href="/about">
-                  <a>Dashboard</a>
-                </Link>
-              </li>
-              <li className="">
-                <a href="/signout">Signout</a>
-              </li>
+              <a href="/" className="mr-8 flex justify-center flex-col items-center text-secondary">
+                <i className="text-2xl">
+                  <AiOutlineHome />
+                </i>
+                <span className="text-xs">Home</span>
+              </a>
+              {isSuperAdmin ? (
+                <a href="/system/create" className="mr-8 flex justify-center flex-col items-center text-secondary">
+                  <i className="text-2xl">
+                    <IoAdd />
+                  </i>
+                  <span className="text-xs">Create System</span>
+                </a>
+              ) : (
+                ""
+              )}
+              <a href="/notifications" className="mr-8 flex justify-center flex-col items-center text-secondary">
+                <i className="text-2xl">
+                  <IoIosNotificationsOutline />
+                </i>
+                <span className="text-xs">Notifications</span>
+              </a>
+              <a href="/signout" className="mr-8 flex justify-center flex-col items-center text-secondary">
+                <i className="text-2xl">
+                  <AiOutlineLogout />
+                </i>
+                <span className="text-xs">Signout</span>
+              </a>
             </ul>
           ) : (
             <ul className="flex">

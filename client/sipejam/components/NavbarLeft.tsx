@@ -2,22 +2,22 @@ import React, { useEffect, useState } from "react";
 import classNames from "classnames";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { connect } from "react-redux";
 import { AiOutlineHome, AiOutlineProfile, AiOutlineLogout } from "react-icons/ai";
 import { RiDashboardLine } from "react-icons/ri";
 import { BsGraphUp } from "react-icons/bs";
 import { IoSettingsOutline } from "react-icons/io5";
 
 interface Props {
-  authenticated: boolean;
   user: any;
 }
 
-const NavbarLeft: React.FC<Props> = ({ authenticated, user }) => {
+const NavbarLeft: React.FC<Props> = ({ user }) => {
   const [path, setPath] = useState("");
 
   const router = useRouter();
-  console.log(authenticated, user);
+  console.log(user);
+
+  useEffect(() => {}, []);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -107,11 +107,4 @@ const NavbarLeft: React.FC<Props> = ({ authenticated, user }) => {
   );
 };
 
-const mapStateToProps = (state: any) => {
-  return {
-    authenticated: state.authReducer.authenticated,
-    user: state.authReducer.user,
-  };
-};
-
-export default connect(mapStateToProps)(NavbarLeft);
+export default NavbarLeft;

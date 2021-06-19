@@ -13,7 +13,13 @@ export const findSystems = async (query: string) => {
 };
 
 export const getSystem = async (systemName: string) => {
-  const res = await axios.get(`/system/${name}`);
+  const res = await axios.get(`/system/${systemName}`);
 
-  return res;
+  return res.data;
+};
+
+export const createSystem = async (formData: object) => {
+  const res = await axios.post("/system", formData, { headers: { "Content-Type": "multipart/form-data" } });
+
+  return res.data;
 };

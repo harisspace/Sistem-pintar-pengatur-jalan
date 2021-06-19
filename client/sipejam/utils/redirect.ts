@@ -42,10 +42,6 @@ export const redirectNoAuth = async (ctx: any) => {
     },
   };
 
-  const allowed = {
-    props: {},
-  };
-
   const { token, oauth_token } = nookies.get(ctx);
 
   if (!token && !oauth_token) {
@@ -60,5 +56,11 @@ export const redirectNoAuth = async (ctx: any) => {
     return redirect;
   }
 
-  return allowed;
+  return {
+    props: {
+      user: res.user,
+      authenticated: true,
+      isSuperAdmin: res.user.user_role == "superadmin" ? true : false,
+    },
+  };
 };

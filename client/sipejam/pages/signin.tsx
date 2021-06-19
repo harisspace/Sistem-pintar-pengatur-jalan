@@ -1,5 +1,6 @@
 import Head from "next/head";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { FormEvent, useState } from "react";
 import { Loader } from "../components/Loader";
 import classNames from "classnames";
@@ -9,6 +10,7 @@ import { connect } from "react-redux";
 import { signinStart } from "../store/actions/auth.actions";
 import { GetServerSideProps } from "next";
 import { redirectWithAuth } from "../utils/redirect";
+import { useEffect } from "react";
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   return redirectWithAuth(ctx);
@@ -19,17 +21,23 @@ interface Props {
   signinStart: (emailAndPassword: object) => {};
   loading: boolean;
   error: any;
+  authenticated: boolean;
 }
 
-function signin({ loading, signinStart: signinStartProps, error }: Props) {
+function signin({ loading, signinStart: signinStartProps, error, authenticated }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     signinStartProps({ email, password });
   };
+
+  useEffect(() => {
+    if (authenticated) router.push("/");
+  }, [authenticated]);
 
   return (
     <div>
@@ -100,10 +108,7 @@ function signin({ loading, signinStart: signinStartProps, error }: Props) {
                 </Link>
                 untuk register
               </span>
-              <input
-                type="submit"
-                className="mt-3 cursor-pointer block bg-secondary text-white font-bold uppercase text-xs px-4 py-2 rounded shadow hover:shadow-md outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150"
-              />
+              <input type="submit" className="btn" />
             </form>
           </div>
         </div>
@@ -116,6 +121,7 @@ const mapStateToProps = (state: any) => {
   return {
     loading: state.authReducer.loading,
     error: state.authReducer.error,
+    authenticated: state.authReducer.authenticated,
   };
 };
 

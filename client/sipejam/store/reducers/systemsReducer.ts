@@ -1,27 +1,27 @@
 import { systemActionTypes } from "../types/system.types";
 
 const initialState = {
+  systems: null,
   error: null,
   loading: true,
-  system: null,
 };
 
-export const systemReducer = (state = initialState, action: any) => {
+export const systemsReducer = (state = initialState, action: any) => {
   switch (action.type) {
-    case systemActionTypes.GET_SYSTEM_START:
+    case systemActionTypes.GET_SYSTEMS_START:
       return {
         ...state,
         loading: true,
       };
 
-    case systemActionTypes.GET_SYSTEM_SUCCESS:
+    case systemActionTypes.GET_SYSTEMS_SUCCESS:
       return {
         ...state,
         loading: false,
-        system: action.payload,
+        systems: action.payload,
       };
 
-    case systemActionTypes.GET_SYSTEM_FAILURE:
+    case systemActionTypes.GET_SYSTEMS_FAILURE:
       return {
         ...state,
         loading: false,

@@ -16,6 +16,7 @@ export const getSystemsSuccess = (systems: object[]) => ({
 
 export const getSystemStart = (systemName: string) => ({
   type: systemActionTypes.GET_SYSTEM_START,
+  payload: systemName,
 });
 
 export const getSystemFailure = (err: any) => ({

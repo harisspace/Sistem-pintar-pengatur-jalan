@@ -10,41 +10,10 @@ import { useEffect } from "react";
 import { getSystemsStart } from "../store/actions/system.action";
 import { connect } from "react-redux";
 import { Loader } from "../components/Loader";
+import { redirectNoAuth } from "../utils/redirect";
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  let res: any;
-
-  const unauthenticated = {
-    res: null,
-    authenticated: false,
-    error: null,
-  };
-
-  const { token, oauth_token } = nookies.get(ctx);
-
-  if (!token && !oauth_token) {
-    return {
-      props: { ...unauthenticated },
-    };
-  }
-
-  res = await checkCookie(token || oauth_token).catch((err) => err);
-
-  if (res instanceof Error)
-    return {
-      props: { ...unauthenticated, error: res },
-    };
-  if (!res)
-    return {
-      props: { ...unauthenticated },
-    };
-
-  return {
-    props: {
-      authenticated: true,
-      user: res.user,
-    },
-  };
+  return redirectNoAuth(ctx);
 };
 
 interface Props {
@@ -54,6 +23,7 @@ interface Props {
   getSystemsStart: () => {};
   error: any;
   loading: boolean;
+  isSuperAdmin: boolean;
 }
 
 const Home: React.FC<Props> = ({
@@ -63,10 +33,13 @@ const Home: React.FC<Props> = ({
   getSystemsStart: getSystemsStartProps,
   loading,
   error,
+  isSuperAdmin,
 }) => {
   useEffect(() => {
     getSystemsStartProps();
   }, []);
+
+  console.log(loading);
 
   const getData = loading ? <Loader /> : <SystemCardList systems={systems} user={user} />;
 
@@ -76,7 +49,7 @@ const Home: React.FC<Props> = ({
         <title>Home</title>
       </Head>
       <div className="bg-gradient-to-b from-primary via-secondary">
-        <Navbar authenticated={authenticated} />
+        <Navbar authenticated={authenticated} isSuperAdmin={isSuperAdmin} />
 
         {authenticated ? (
           getData
@@ -123,9 +96,9 @@ const Home: React.FC<Props> = ({
 const mapStateToProps = (state: any) => {
   console.log(state);
   return {
-    systems: state.systemReducer.systems,
-    loading: state.systemReducer.loading,
-    error: state.systemReducer.error,
+    systems: state.systemsReducer.systems,
+    loading: state.systemsReducer.loading,
+    error: state.systemsReducer.error,
   };
 };
 
