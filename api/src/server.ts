@@ -11,13 +11,19 @@ import emailRoutes from "./routes/emailRoutes";
 import dashboardRouter from "./routes/dashboardRoutes";
 import userRouter from "./routes/userRoutes";
 import systemRoutes from "./routes/systemRoutes";
+import { Server, Socket } from "socket.io";
+import { createServer } from "http";
 
 dotenv.config();
-
 // setup prisma orm
 export const prisma = new PrismaClient();
 // express app
 const app = express();
+
+// server
+const server = createServer(app);
+
+const io = new Server(server);
 
 // logging http req and res for development
 if (process.env.NODE_ENV === "development") {
@@ -31,8 +37,8 @@ app.use(
   })
 );
 // settings middleware
-app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 // cookie parser
 app.use(cookieParser());
 app.use(express.static("public"));
@@ -52,6 +58,10 @@ app.all("*", (req, res, next) => {
 // handle error and logging error
 app.use(logErrorMiddleware);
 app.use(returnError);
+
+io.on("connection", (socket: Socket) => {
+  console.log("connection");
+});
 
 process.on("unhandledRejection", (error) => {
   logError(error);

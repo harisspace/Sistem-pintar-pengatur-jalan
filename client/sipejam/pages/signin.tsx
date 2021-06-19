@@ -1,33 +1,29 @@
 import Head from "next/head";
 import Link from "next/link";
-import { useRouter } from "next/router";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import { Loader } from "../components/Loader";
 import classNames from "classnames";
 import { GoogleOAuth } from "../components/GoogleOAuth";
 import { Notification } from "../components/Notification";
 import { connect } from "react-redux";
 import { signinStart } from "../store/actions/auth.actions";
+import { GetServerSideProps } from "next";
+import { redirectWithAuth } from "../utils/redirect";
+
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  return redirectWithAuth(ctx);
+};
 
 interface Props {
   user: object;
   signinStart: (emailAndPassword: object) => {};
-  authenticated: boolean;
   loading: boolean;
   error: any;
 }
 
-function signin({ loading, signinStart: signinStartProps, authenticated, error }: Props) {
+function signin({ loading, signinStart: signinStartProps, error }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!router.isReady) return;
-
-    authenticated ? router.push("/") : null;
-  }, [authenticated]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -118,15 +114,12 @@ function signin({ loading, signinStart: signinStartProps, authenticated, error }
 
 const mapStateToProps = (state: any) => {
   return {
-    authenticated: state.authReducer.authenticated,
     loading: state.authReducer.loading,
     error: state.authReducer.error,
   };
 };
 
 const mapDispatchToProps = (dispatch: any, ownProps: any) => {
-  console.log(dispatch);
-
   return {
     signinStart: (payload: any) => dispatch(signinStart(payload)),
   };

@@ -5,7 +5,7 @@ export const withAuth = (WrappedComponent: any) => {
   return (props: any) => {
     if (typeof window !== "undefined") {
       const token = cookie.get("token");
-      console.log(token);
+      console.log("from server brow", token);
 
       return <WrappedComponent {...props} />;
     }

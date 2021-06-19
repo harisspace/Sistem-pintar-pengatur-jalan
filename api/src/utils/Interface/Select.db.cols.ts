@@ -11,6 +11,7 @@ export const SelectUser = {
 };
 
 export const SelectSystem = {
+  user_uid: true,
   id: true,
   system_uid: true,
   name: true,

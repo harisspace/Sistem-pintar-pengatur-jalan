@@ -30,7 +30,9 @@ export const SystemCard: React.FC<Props> = ({ system, user }) => {
       </div>
       <div className="flex flex-col justify-between">
         <div>
-          <h1 className="font-bold uppercase text-xl">{system.name}</h1>
+          <a href={`/system/${system.name}`} className="font-bold uppercase text-xl">
+            {system.name}
+          </a>
           <span className="flex items-center text-sm text-primary">
             <MdPlace />
             <span className="ml-1">{system.placed}</span>

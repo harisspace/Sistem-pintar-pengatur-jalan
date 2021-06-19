@@ -11,6 +11,7 @@ import fs from "fs";
 import { verifyToken } from "../utils/authentication/generateToken";
 import { UnauthorizedError } from "../utils/errorHandler/UnauthorizedError";
 import { ForbiddenError } from "../utils/errorHandler/ForbiddenError";
+import { makeText, slugify } from "../utils/helper/slugify";
 // === GET METHOD ===
 
 // get all systems
@@ -29,6 +30,34 @@ export const getSystems = async (req: Request, res: Response, next: NextFunction
   }
 
   res.json({ systems });
+};
+
+export const getSystem = async (req: Request, res: Response, next: NextFunction) => {
+  let { systemName: name } = req.params;
+  name = makeText(name);
+
+  let system: any;
+  try {
+    system = await prisma.systems.findUnique({
+      where: { name },
+      select: {
+        users: { select: SelectUser },
+        usersystemlinks: { select: { users: { select: { image_uri: true, id: true, username: true } } } },
+        created_at: true,
+        name: true,
+        placed: true,
+        status: true,
+        image_uri: true,
+      },
+    });
+    if (!system) return next(new NotFoundError("System not found"));
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      return next(new BadRequestError("Invalid name"));
+    }
+    return next(new InternalError("Something went wrong"));
+  }
+  return res.json(system);
 };
 
 export const findSystem = async (req: Request, res: Response, next: NextFunction) => {
@@ -54,6 +83,7 @@ export const findSystem = async (req: Request, res: Response, next: NextFunction
 
 // === POST METHOD ===
 export const create_system = async (req: Request, res: Response, next: NextFunction) => {
+  console.log(req.file, req.body);
   const { name, placed }: CreateSystem = req.body;
   const file = req.file;
 
@@ -61,6 +91,8 @@ export const create_system = async (req: Request, res: Response, next: NextFunct
   if (file) {
     image_uri = file.filename;
   }
+
+  // const slugName = slugify(name);
 
   const { user_uid } = res.locals.user;
 
