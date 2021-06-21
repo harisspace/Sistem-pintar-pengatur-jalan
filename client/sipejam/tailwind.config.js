@@ -24,6 +24,7 @@ module.exports = {
       textColor: {
         primary: "#878D98",
         secondary: "4F4F4F",
+        bg: "#9AC8C8",
       },
       width: {
         wrapper: "95%",

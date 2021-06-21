@@ -23,3 +23,15 @@ export const createSystem = async (formData: object) => {
 
   return res.data;
 };
+
+export const updateSystem = async (slugName: string, formData: object) => {
+  const res = await axios.patch(`/system/${slugName}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
+};
+
+export const deleteSystem = async (slugName: string) => {
+  const res = await axios.delete(`/system/${slugName}`);
+  return res.data;
+};
