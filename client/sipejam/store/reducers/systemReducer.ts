@@ -9,12 +9,14 @@ const initialState = {
 export const systemReducer = (state = initialState, action: any) => {
   switch (action.type) {
     case systemActionTypes.GET_SYSTEM_START:
+    case systemActionTypes.UPDATE_SYSTEM_START:
       return {
         ...state,
         loading: true,
       };
 
     case systemActionTypes.GET_SYSTEM_SUCCESS:
+    case systemActionTypes.UPDATE_SYSTEM_SUCCESS:
       return {
         ...state,
         loading: false,
@@ -22,6 +24,7 @@ export const systemReducer = (state = initialState, action: any) => {
       };
 
     case systemActionTypes.GET_SYSTEM_FAILURE:
+    case systemActionTypes.UPDATE_SYSTEM_FAILURE:
       return {
         ...state,
         loading: false,

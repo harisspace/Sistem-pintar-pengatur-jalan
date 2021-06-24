@@ -21,15 +21,15 @@ const username: React.FC<Props> = ({ user }) => {
             <ul>
               <li className="flex flex-col">
                 <span className="text-primary">Name</span>
-                <span>Haris Akbar</span>
+                <span>{user.username}</span>
               </li>
               <li className="flex flex-col mt-3">
                 <span className="text-primary">Email</span>
-                <span>harisakbar04@gmail.com</span>
+                <span>{user.email}</span>
               </li>
               <li className="flex flex-col mt-3">
                 <span className="text-primary">User Role</span>
-                <span>user</span>
+                <span>{user.user_role}</span>
               </li>
             </ul>
           </div>

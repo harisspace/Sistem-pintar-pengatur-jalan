@@ -1,6 +1,6 @@
 import { GetServerSideProps } from "next";
 import { redirectNoAuth } from "../../utils/redirect";
-import Router from "next/router";
+import Router, { useRouter } from "next/router";
 import { useEffect, useState, MouseEvent, useRef } from "react";
 import { getSystemStart } from "../../store/actions/system.action";
 import { connect } from "react-redux";
@@ -10,6 +10,7 @@ import { MdPlace } from "react-icons/md";
 import { updateSystem, deleteSystem } from "../../api/system.request";
 import slugify from "slugify";
 import { ChangeEvent } from "react";
+import classNames from "classnames";
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   return redirectNoAuth(ctx);
@@ -41,9 +42,8 @@ const slugName: React.FC<Props> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // route
-  const { slugName: systemName } = Router.query;
-
-  const { slugName } = Router.query;
+  const router = useRouter();
+  const { slugName: systemName } = router.query;
 
   // effect
   useEffect(() => {
@@ -84,11 +84,11 @@ const slugName: React.FC<Props> = ({
     formData.append("placed", placed);
 
     try {
-      const res = await updateSystem(slugName as string, formData);
+      const res = await updateSystem(systemName as string, formData);
       if (res) {
         setIsChange(false);
-        const slugName = slugify(name);
-        Router.replace(`/system/${systemName}`, `/system/${slugName}`);
+        const systemNameSlug = slugify(name);
+        Router.replace(`/system/${systemName}`, `/system/${systemNameSlug}`);
       }
     } catch (err) {
       console.log(err);
@@ -97,7 +97,7 @@ const slugName: React.FC<Props> = ({
 
   const handleDeleteSystem = async (e: MouseEvent<HTMLButtonElement>) => {
     try {
-      const res = await deleteSystem(slugName as string);
+      const res = await deleteSystem(systemName as string);
       if (res) Router.replace(`/system/${systemName}`, "/");
     } catch (err) {
       console.log(err);
@@ -196,6 +196,7 @@ const slugName: React.FC<Props> = ({
             <div className="flex mb-3 justify-center h-64">
               <img
                 src={`${process.env.NEXT_PUBLIC_BASE_URL}/images/${system.image_uri}`}
+                className={classNames({ "cursor-pointer": isChange })}
                 alt={system.name}
                 onClick={uploadImage}
               />

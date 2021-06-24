@@ -64,3 +64,33 @@ export const redirectNoAuth = async (ctx: any) => {
     },
   };
 };
+
+export const allowedWithoutAuth = async (ctx: any) => {
+  let res: any;
+
+  const noAuth = {
+    props: {
+      authenticated: false,
+    },
+  };
+
+  const { token, oauth_token } = nookies.get(ctx);
+
+  if (!token && !oauth_token) {
+    return noAuth;
+  }
+
+  try {
+    res = await checkCookie(token || oauth_token);
+  } catch (err) {
+    return noAuth;
+  }
+
+  return {
+    props: {
+      user: res.user,
+      authenticated: true,
+      isSuperAdmin: res.user.user_role == "superadmin" ? true : false,
+    },
+  };
+};

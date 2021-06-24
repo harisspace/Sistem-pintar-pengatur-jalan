@@ -10,10 +10,10 @@ import { useEffect } from "react";
 import { getSystemsStart } from "../store/actions/system.action";
 import { connect } from "react-redux";
 import { Loader } from "../components/Loader";
-import { redirectNoAuth } from "../utils/redirect";
+import { allowedWithoutAuth } from "../utils/redirect";
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  return redirectNoAuth(ctx);
+  return allowedWithoutAuth(ctx);
 };
 
 interface Props {

@@ -12,9 +12,10 @@ import slugify from "slugify";
 
 interface Props {
   user: any;
+  systemName: string;
 }
 
-const NavbarLeft: React.FC<Props> = ({ user }) => {
+const NavbarLeft: React.FC<Props> = ({ user, systemName }) => {
   // state
   const [path, setPath] = useState("");
   const [isChange, setIsChange] = useState(false);
@@ -84,7 +85,9 @@ const NavbarLeft: React.FC<Props> = ({ user }) => {
                 onClick={handleUploadProfile}
                 src={`http://localhost:4000/images/${user.image_uri}`}
                 alt="user profile"
-                className="shadow rounded-full max-w-full h-full w-full align-middle border-none"
+                className={classNames("shadow rounded-full max-w-full h-full w-full align-middle border-none", {
+                  "cursor-pointer": isChange,
+                })}
               />
               {isChange ? (
                 <input type="file" name="image" onChange={handleInputChange} ref={inputRef} className="hidden" />
@@ -137,7 +140,7 @@ const NavbarLeft: React.FC<Props> = ({ user }) => {
               })}
             >
               <RiDashboardLine />
-              <Link href="/dashboard">
+              <Link href={`/dashboard?name=${systemName}`}>
                 <a className="ml-2">Dashboard</a>
               </Link>
             </li>
@@ -147,7 +150,7 @@ const NavbarLeft: React.FC<Props> = ({ user }) => {
               })}
             >
               <BsGraphUp />
-              <Link href="/dashboard/graphics">
+              <Link href={`/dashboard/graphics?name=${systemName}`}>
                 <a className="ml-2">Graphics</a>
               </Link>
             </li>
@@ -158,7 +161,7 @@ const NavbarLeft: React.FC<Props> = ({ user }) => {
             >
               <IoSettingsOutline />
 
-              <Link href="/dashboard/settings">
+              <Link href={`/dashboard/settings?name=${systemName}`}>
                 <a className="ml-2">Settings</a>
               </Link>
             </li>

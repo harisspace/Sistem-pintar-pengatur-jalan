@@ -4,6 +4,7 @@ import { MdPlace } from "react-icons/md";
 import { RiAdminLine } from "react-icons/ri";
 import { useEffect } from "react";
 import slugify from "slugify";
+import queryString from "querystring";
 
 interface Props {
   system: any;
@@ -12,7 +13,11 @@ interface Props {
 
 export const SystemCard: React.FC<Props> = ({ system, user }) => {
   const [isAdmin, setIsAdmin] = useState(false);
-  console.log(user);
+
+  // slug
+  const nameSlug = slugify(system.name, "_");
+  // querystring
+  const systemName = queryString.stringify({ name: nameSlug });
 
   useEffect(() => {
     if (system.usersystemlinks.length < 1) {
@@ -28,8 +33,6 @@ export const SystemCard: React.FC<Props> = ({ system, user }) => {
       });
     }
   }, []);
-
-  const nameSlug = slugify(system.name, "_");
 
   return (
     <div className="grid bg-white grid-cols-4 rounded-lg mt-10 w-3/6 m-auto py-5 px-4">
@@ -55,7 +58,7 @@ export const SystemCard: React.FC<Props> = ({ system, user }) => {
       </div>
       <div className="col-span-1">
         <button className="bg-green-500 text-white w-full py-1 px-6 active:bg-gray-500 font-bold rounded-xl">
-          <a href={isAdmin ? "/dashboard" : "/join"}>{isAdmin ? "Dashboard" : "Join"}</a>
+          <a href={isAdmin ? `/dashboard?${systemName}` : "/join"}>{isAdmin ? "Dashboard" : "Join"}</a>
         </button>
       </div>
     </div>
