@@ -15,6 +15,7 @@ export const SelectSystem = {
   id: true,
   system_uid: true,
   name: true,
+  system_work: true,
   placed: true,
   status: true,
   image_uri: true,

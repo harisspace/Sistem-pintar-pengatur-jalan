@@ -11,7 +11,7 @@ import fs from "fs";
 import { verifyToken } from "../utils/authentication/generateToken";
 import { UnauthorizedError } from "../utils/errorHandler/UnauthorizedError";
 import { ForbiddenError } from "../utils/errorHandler/ForbiddenError";
-import { makeText, slugify } from "../utils/helper/slugify";
+import { makeText } from "../utils/helper/slugify";
 // === GET METHOD ===
 
 // get all systems
@@ -92,8 +92,6 @@ export const create_system = async (req: Request, res: Response, next: NextFunct
     image_uri = file.filename;
   }
 
-  // const slugName = slugify(name);
-
   const { user_uid } = res.locals.user;
 
   const { valid, errors } = createSystemValidator(name, placed);
@@ -122,9 +120,11 @@ export const create_system = async (req: Request, res: Response, next: NextFunct
 
 // === PATCH METHOD ===
 export const updateSystem = async (req: Request, res: Response, next: NextFunction) => {
-  const { name: nameFromParams } = req.params;
+  let { systemName: nameFromParams } = req.params;
+  nameFromParams = makeText(nameFromParams);
   let newThing = req.body;
   const file = req.file;
+  console.log(newThing, nameFromParams, file);
 
   if (file) {
     try {
@@ -135,27 +135,30 @@ export const updateSystem = async (req: Request, res: Response, next: NextFuncti
       if (system.image_uri) {
         fs.unlinkSync(`public\\images\\${system.image_uri}`);
       }
+      const image_uri = file.filename;
+      newThing = { ...newThing, image_uri };
     } catch (err) {
       return next(new InternalError("Something went wrong"));
     }
   }
 
-  let updatedSystem;
+  let updatedSystem: any;
   try {
     updatedSystem = await prisma.systems.update({
       data: { updated_at: new Date(), ...newThing },
       where: { name: nameFromParams },
+      select: SelectSystem,
     });
   } catch (err) {
-    return next(new InternalError("Something went wrong"));
+    return next(new InternalError("Something went wrong", err));
   }
-
-  return res.json({ updateSystem });
+  console.log(updatedSystem);
+  return res.json(updatedSystem);
 };
 
 // === DELETE METHOD ===
 export const deleteSystem = async (req: Request, res: Response, next: NextFunction) => {
-  const { name } = req.params;
+  const { systemName: name } = req.params;
 
   let system;
   try {

@@ -31,6 +31,8 @@ model systems {
   status          status
   image_uri       String?           @db.VarChar(250)
   name            String            @unique @db.VarChar(200)
+  aplication_id   String?           @unique @db.VarChar(300)
+  system_work     system_work       @default(auto)
   users           users             @relation(fields: [user_uid], references: [user_uid])
   usersystemlinks usersystemlinks[]
 }
@@ -73,4 +75,9 @@ enum role {
 enum status {
   on
   off
+}
+
+enum system_work {
+  auto
+  manual
 }
