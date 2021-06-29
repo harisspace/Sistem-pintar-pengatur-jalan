@@ -27,6 +27,7 @@ const NavbarLeft: React.FC<Props> = ({ user, systemName }) => {
 
   // slug
   const usernameSlug = slugify(user.username, "_");
+  const systemNameSlug = slugify(systemName, "_");
 
   // effect
   useEffect(() => {}, []);
@@ -140,7 +141,7 @@ const NavbarLeft: React.FC<Props> = ({ user, systemName }) => {
               })}
             >
               <RiDashboardLine />
-              <Link href={`/dashboard?name=${systemName}`}>
+              <Link href={`/dashboard?name=${systemNameSlug}`}>
                 <a className="ml-2">Dashboard</a>
               </Link>
             </li>
@@ -150,7 +151,7 @@ const NavbarLeft: React.FC<Props> = ({ user, systemName }) => {
               })}
             >
               <BsGraphUp />
-              <Link href={`/dashboard/graphics?name=${systemName}`}>
+              <Link href={`/dashboard/graphics?name=${systemNameSlug}`}>
                 <a className="ml-2">Graphics</a>
               </Link>
             </li>
@@ -161,15 +162,15 @@ const NavbarLeft: React.FC<Props> = ({ user, systemName }) => {
             >
               <IoSettingsOutline />
 
-              <Link href={`/dashboard/settings?name=${systemName}`}>
+              <Link href={`/dashboard/settings?name=${systemNameSlug}`}>
                 <a className="ml-2">Settings</a>
               </Link>
             </li>
             <li className="mb-3 flex justify-center items-center">
               <AiOutlineLogout />
-              <Link href="/signout">
-                <a className="ml-2">Signout</a>
-              </Link>
+              <a className="ml-2" href="/signout">
+                Signout
+              </a>
             </li>
           </ul>
         </div>

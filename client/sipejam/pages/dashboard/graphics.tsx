@@ -3,6 +3,7 @@ import { GetServerSideProps } from "next";
 import NavbarLeft from "../../components/NavbarLeft";
 import { redirectNoAuth } from "../../utils/redirect";
 import dynamic from "next/dynamic";
+import { connect } from "react-redux";
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   return redirectNoAuth(ctx);
@@ -12,9 +13,10 @@ const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 interface Props {
   user: any;
+  system: any
 }
 
-const graphics: React.FC<Props> = ({ user }) => {
+const graphics: React.FC<Props> = ({ user, system }) => {
   // state
   const [options, setOptions] = useState<object>({
     chart: {
@@ -34,7 +36,7 @@ const graphics: React.FC<Props> = ({ user }) => {
 
   return (
     <div className="grid grid-cols-12">
-      <NavbarLeft user={user} />
+      <NavbarLeft user={user} systemName={system.name} />
       <div className="col-span-10 bg-gray-100 min-h-screen">
         <div className="w-wrapper m-auto mt-5">
           <div className="p-4 bg-white shadow-xl rounded-xl">
@@ -233,4 +235,11 @@ const graphics: React.FC<Props> = ({ user }) => {
   );
 };
 
-export default graphics;
+const mapStateToProps = (state: any) => {
+  return {
+    system: state.systemReducer.system,
+    loading: state.systemReducer.loading,
+  };
+};
+
+export default connect(mapStateToProps)(graphics);

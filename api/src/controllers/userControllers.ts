@@ -24,6 +24,17 @@ export const user = async (req: Request, res: Response, next: NextFunction) => {
   return res.json({ success: true, user });
 };
 
+export const getNotifications = async (req: Request, res: Response, next: NextFunction) => {
+  let notifications;
+  try {
+    notifications = await prisma.notifications.findMany({ where: { to_uid: res.locals.user.user_uid } });
+  } catch (err) {
+    return next(new InternalError("Something was wrong"));
+  }
+
+  return res.json(notifications);
+};
+
 export const allUsers = async (req: Request, res: Response, next: NextFunction) => {
   let users;
   try {

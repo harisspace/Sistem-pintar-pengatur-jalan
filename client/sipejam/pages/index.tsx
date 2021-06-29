@@ -3,14 +3,14 @@ import Navbar from "../components/Navbar";
 import Image from "next/image";
 import Footer from "../components/Footer";
 import { GetServerSideProps } from "next";
-import nookies from "nookies";
 import { SystemCardList } from "../components/SystemCardList";
-import { checkCookie } from "../api/auth.request";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { getSystemsStart } from "../store/actions/system.action";
 import { connect } from "react-redux";
 import { Loader } from "../components/Loader";
 import { allowedWithoutAuth } from "../utils/redirect";
+import { useContext } from "react";
+import { JoinContext } from "../context/JoinContext";
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   return allowedWithoutAuth(ctx);
@@ -24,6 +24,7 @@ interface Props {
   error: any;
   loading: boolean;
   isSuperAdmin: boolean;
+  notifications: any;
 }
 
 const Home: React.FC<Props> = ({
@@ -34,10 +35,36 @@ const Home: React.FC<Props> = ({
   loading,
   error,
   isSuperAdmin,
+  notifications,
 }) => {
+  const ws = useRef<any>(null);
+
+  const { isJoin }: any = useContext(JoinContext);
+
   useEffect(() => {
     getSystemsStartProps();
+
+    // ws
+    ws.current = new WebSocket("ws://localhost:4000");
+    ws.current.onopen = () => {
+      console.log("connection made");
+    };
+    ws.current.onclose = () => console.log("disconnect");
+    ws.current.onmessage = (event: any) => {
+      console.log(JSON.parse(event.data));
+      console.log(event.data);
+    };
+
+    return () => {
+      ws.current.close();
+    };
   }, []);
+
+  useEffect(() => {
+    if (isJoin.status && ws.current !== null) {
+      ws.current.send(JSON.stringify({ user_uid: user.user_uid, data: "hello dari client" }));
+    }
+  }, [isJoin]);
 
   console.log(loading);
 
@@ -49,7 +76,7 @@ const Home: React.FC<Props> = ({
         <title>Home</title>
       </Head>
       <div className="bg-gradient-to-b from-primary via-secondary">
-        <Navbar authenticated={authenticated} isSuperAdmin={isSuperAdmin} />
+        <Navbar authenticated={authenticated} isSuperAdmin={isSuperAdmin} notifications={notifications} />
 
         {authenticated ? (
           getData

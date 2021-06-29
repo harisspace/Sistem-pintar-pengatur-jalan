@@ -89,6 +89,7 @@ export const allowedWithoutAuth = async (ctx: any) => {
   return {
     props: {
       user: res.user,
+      notifications: res.notifications,
       authenticated: true,
       isSuperAdmin: res.user.user_role == "superadmin" ? true : false,
     },

@@ -1,4 +1,5 @@
 import { GetServerSideProps } from "next";
+import { connect } from "react-redux";
 import { Card } from "../../components/Card";
 import NavbarLeft from "../../components/NavbarLeft";
 import { redirectNoAuth } from "../../utils/redirect";
@@ -9,12 +10,13 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
 interface Props {
   user: any;
+  system: any;
 }
 
-const username: React.FC<Props> = ({ user }) => {
+const username: React.FC<Props> = ({ user, system }) => {
   return (
     <div className="grid grid-cols-12">
-      <NavbarLeft user={user} />
+      <NavbarLeft user={user} systemName={system.name} />
       <div className="col-span-10 bg-gray-100 min-h-screen">
         <div className="w-wrapper m-auto mt-5">
           <div className="p-4 bg-white rounded-xl shadow-xl">
@@ -47,4 +49,11 @@ const username: React.FC<Props> = ({ user }) => {
   );
 };
 
-export default username;
+const mapStateToProps = (state: any) => {
+  return {
+    system: state.systemReducer.system,
+    loading: state.systemReducer.loading,
+  };
+};
+
+export default connect(mapStateToProps, null)(username);

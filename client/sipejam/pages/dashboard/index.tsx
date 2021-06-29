@@ -8,6 +8,7 @@ import { makeText } from "../../utils/makeText";
 import { getSystemStart } from "../../store/actions/system.action";
 import { connect } from "react-redux";
 import { Loader } from "../../components/Loader";
+import { Notification } from "../../components/Notification";
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   return redirectNoAuth(ctx);
@@ -18,9 +19,10 @@ interface Props {
   getSystemStart: (systemName: string) => {};
   loading: boolean;
   system: any;
+  error: any;
 }
 
-const dashboard: React.FC<Props> = ({ user, getSystemStart: getSystemStartProps, loading, system }) => {
+const dashboard: React.FC<Props> = ({ user, getSystemStart: getSystemStartProps, loading, system, error }) => {
   // state
   const [isAllowed, setIsAllowed] = useState<boolean>(false);
 
@@ -28,6 +30,12 @@ const dashboard: React.FC<Props> = ({ user, getSystemStart: getSystemStartProps,
   const router = useRouter();
   let { name } = router.query;
   if (!name) router.push("/");
+  if (error) {
+    setTimeout(() => {
+      router.push("/");
+    }, 3000);
+    return <Notification message={error?.data.message} />;
+  }
   const pathName = makeText(name as string);
 
   // effect
@@ -84,6 +92,7 @@ const mapStateToProps = (state: any) => {
   return {
     system: state.systemReducer.system,
     loading: state.systemReducer.loading,
+    error: state.systemReducer.error,
   };
 };
 

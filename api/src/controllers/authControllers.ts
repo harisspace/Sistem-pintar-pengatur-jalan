@@ -14,6 +14,7 @@ import { serializeCookie } from "../utils/authentication/cookie";
 import queryString from "querystring";
 import axios from "axios";
 import { users } from ".prisma/client";
+import jwt from "jsonwebtoken";
 
 // controllers
 // ==== POST METHOD ====
@@ -46,17 +47,6 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
     return next(new InternalError("Something went wrong", err));
   }
 
-  // generate token for sending verification link
-  const token = generateToken({ username, email });
-
-  // TODO: if not exist send email verification and redirect to home
-  const transporter = new Email(email, token);
-  if (process.env.NODE_ENV === "development") {
-    transporter.verify();
-  }
-  const emailResult = await transporter.sendEmail();
-  console.log(emailResult);
-
   // hashing password using bcrypt
   const salt = await bcrypt.genSalt(10);
   const hashPassword = await bcrypt.hash(password, salt);
@@ -77,6 +67,17 @@ export const signup = async (req: Request, res: Response, next: NextFunction) =>
   } catch (err) {
     return next(new InternalError("Something went wrong", err));
   }
+
+  // generate token for sending verification link
+  const token = generateToken({ username, email, user_uid: user.user_uid as string });
+
+  // TODO: if not exist send email verification and redirect to home
+  const transporter = new Email(email, token);
+  if (process.env.NODE_ENV === "development") {
+    transporter.verify();
+  }
+  const emailResult = await transporter.sendEmail();
+  console.log(emailResult);
 
   res.json({
     user: { ...user },
@@ -116,7 +117,7 @@ export const signin = async (req: Request, res: Response, next: NextFunction) =>
   }
 
   // generate token
-  const token = generateToken({ username: user.username as string, email });
+  const token = generateToken({ username: user.username as string, email, user_uid: user.user_uid as string });
 
   // handle if user not confirmed account (respon)
   if (user && !user.confirmed) {
@@ -148,7 +149,7 @@ export const signin = async (req: Request, res: Response, next: NextFunction) =>
 export const confirmation = async (req: Request, res: Response, next: NextFunction) => {
   const token = req.params.token;
 
-  let username: any, email: any;
+  let username: any, email: any, user_uid: any;
   verifyToken((<unknown>token) as string, process.env.JWT_SECRET!, (err: any, decodedToken: any) => {
     if (err) {
       return next(new BadRequestError("Invalid token", err));
@@ -156,6 +157,7 @@ export const confirmation = async (req: Request, res: Response, next: NextFuncti
     console.log(decodedToken);
     username = decodedToken.username;
     email = decodedToken.email;
+    user_uid = decodedToken.user_uid;
     const expiredTime = decodedToken.exp;
     if (Date.now() >= expiredTime * 1000) {
       return next(new BadRequestError("Token expired"));
@@ -176,7 +178,7 @@ export const confirmation = async (req: Request, res: Response, next: NextFuncti
   }
 
   // create new token anticipate for new expiredIn
-  const newToken = generateToken({ username, email });
+  const newToken = generateToken({ username, email, user_uid });
 
   // set cookie
   res.set("Set-Cookie", serializeCookie("token", newToken));
@@ -253,7 +255,7 @@ export const googleConfirmation = async (req: Request, res: Response, next: Next
   }
 
   // set google token
-  const oauth_token = generateToken({ username: name, email });
+  const oauth_token = generateToken({ username: name, email, user_uid: user.user_uid });
   res.set("Set-Cookie", serializeCookie("oauth_token", oauth_token));
 
   if (isUserRegistered) {
@@ -289,5 +291,13 @@ export const checkCookie = async (req: Request, res: Response, next: NextFunctio
     return next(new UnauthorizedError("Token is not valid", err));
   }
 
-  return res.json({ success: true, user });
+  // get notif
+  const notifications = await prisma.notifications.aggregate({
+    _count: { id: true },
+    where: { to_uid: user.user_uid, read: false },
+    take: 10,
+  });
+  console.log(notifications._count.id);
+
+  return res.json({ success: true, user, notifications: notifications._count.id });
 };

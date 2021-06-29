@@ -5,6 +5,10 @@ import { RiAdminLine } from "react-icons/ri";
 import { useEffect } from "react";
 import slugify from "slugify";
 import queryString from "querystring";
+import axios from "axios";
+import { useRef } from "react";
+import { useContext } from "react";
+import { JoinContext } from "../context/JoinContext";
 
 interface Props {
   system: any;
@@ -13,6 +17,10 @@ interface Props {
 
 export const SystemCard: React.FC<Props> = ({ system, user }) => {
   const [isAdmin, setIsAdmin] = useState(false);
+  const [join, setJoin] = useState<string>("");
+  const ws = useRef<WebSocket | null>(null);
+
+  const { dispatchJoin }: any = useContext(JoinContext);
 
   // slug
   const nameSlug = slugify(system.name, "_");
@@ -33,6 +41,28 @@ export const SystemCard: React.FC<Props> = ({ system, user }) => {
       });
     }
   }, []);
+
+  useEffect(() => {
+    // if not admin request join system
+    if (isAdmin === false) {
+      const joinQuery = queryString.stringify({ name: system.name, username: user.username });
+      setJoin(joinQuery);
+    }
+  }, [isAdmin]);
+
+  // func
+  const requestJoin = async (e: any) => {
+    e.preventDefault();
+
+    dispatchJoin({ type: "REQUEST_JOIN", payload: { username: user.username, system: system.system_uid } });
+
+    try {
+      const res = await axios.post(`/system/join/${system.system_uid}?username=${user.username}`);
+      if (res) console.log(res);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
     <div className="grid bg-white grid-cols-4 rounded-lg mt-10 w-3/6 m-auto py-5 px-4">
@@ -58,7 +88,7 @@ export const SystemCard: React.FC<Props> = ({ system, user }) => {
       </div>
       <div className="col-span-1">
         <button className="bg-green-500 text-white w-full py-1 px-6 active:bg-gray-500 font-bold rounded-xl">
-          <a href={isAdmin ? `/dashboard?${systemName}` : "/join"}>{isAdmin ? "Dashboard" : "Join"}</a>
+          {isAdmin ? <a href="`/dashboard?${systemName}`">Dashboard</a> : <a onClick={requestJoin}>Join</a>}
         </button>
       </div>
     </div>

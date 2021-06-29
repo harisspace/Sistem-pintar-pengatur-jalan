@@ -156,6 +156,28 @@ export const updateSystem = async (req: Request, res: Response, next: NextFuncti
   return res.json(updatedSystem);
 };
 
+export const addAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  let systemUid = req.params.systemUid;
+  if (!systemUid) next(new NotFoundError("Params must provided"));
+
+  const user = res.locals.user;
+
+  // find is admin created system or not
+
+  let systemLinks: any;
+  try {
+    systemLinks = await prisma.usersystemlinks.create({
+      data: { system_role: "admin", user_uid: user.user_uid, system_uid: systemUid },
+    });
+
+    if (!res) throw new Error("Something went wrong");
+  } catch (err) {
+    return next(new InternalError("Something went wrong"));
+  }
+
+  return res.json(systemLinks);
+};
+
 // === DELETE METHOD ===
 export const deleteSystem = async (req: Request, res: Response, next: NextFunction) => {
   const { systemName: name } = req.params;
@@ -217,4 +239,35 @@ export const requestTobeAdmin = async (req: Request, res: Response, next: NextFu
   });
 
   return res.json({ success: true, systemLink });
+};
+
+export const requestJoin = async (req: Request, res: Response, next: NextFunction) => {
+  let systemUid = req.params.systemUid;
+  const usernameRequest: any = req.query.username;
+
+  if (!systemUid || !usernameRequest) return next(new NotFoundError("Params must provided"));
+
+  // find user
+  const userRequest = await prisma.users.findUnique({ where: { username: usernameRequest } });
+  // find system
+  const system = await prisma.systems.findUnique({ where: { system_uid: systemUid } });
+  if (!system || !userRequest) return next(new NotFoundError("System not found"));
+
+  let notifications: any;
+  try {
+    notifications = await prisma.notifications.create({
+      data: {
+        message: `${usernameRequest} want tobe admin of ${system.name}`,
+        title: "Request to be admin",
+        from_uid: userRequest.user_uid,
+        to_uid: system.user_uid,
+      },
+    });
+
+    if (!notifications) throw new Error("Cannot create system");
+  } catch (err) {
+    return next(new InternalError("Something went wrong"));
+  }
+
+  return res.status(201).json(notifications);
 };

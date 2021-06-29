@@ -17,5 +17,9 @@ router
   .patch(checkAuth, isSuperAdmin, uploadImage.single("image"), systemControllers.updateSystem)
   .post(checkAuth, systemControllers.requestTobeAdmin)
   .delete(checkAuth, isSuperAdmin, systemControllers.deleteSystem);
+router
+  .route("/join/:systemUid")
+  .post(checkAuth, systemControllers.requestJoin)
+  .post(checkAuth, isSuperAdmin, systemControllers.addAdmin);
 
 export default router;

@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-export function generateToken(user: { username: string; email: string }) {
+export function generateToken(user: { username: string; email: string; user_uid: string }) {
   return jwt.sign(user, process.env.JWT_SECRET!, { expiresIn: "7d" });
 }
 
